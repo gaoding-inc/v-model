@@ -1,0 +1,38 @@
+{
+  "name": "v-model",
+  "version": "0.0.1",
+  "description": "V-Model is a plugin for Vue.js, like ng-resource.",
+  "main": "lib/v-model.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/laoshu133/v-model.git"
+  },
+  "keywords": [
+    "v-model",
+    "vue-model",
+    "vue",
+    "resource"
+  ],
+  "author": "xiaomi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/laoshu133/v-model/issues"
+  },
+  "homepage": "https://github.com/laoshu133/v-model#readme",
+  "dependencies": {
+    "axios": "^0.15.3",
+    "bluebird": "^3.4.6",
+    "path-to-regexp": "^1.7.0"
+  },
+  "peerDependencies": {
+    "vue": ">1.2.*"
+  },
+  "devDependencies": {
+    "babel-core": "^6.20.0",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0"
+  }
+}
