@@ -14,7 +14,13 @@ See more about [ng-resource](https://docs.angularjs.org/api/ngResource/service/$
 ```
 
 ```javascript
-Vue.use(require('v-model'));
+import Model from 'v-model';
+
+// set baseURL
+Model.http.defaults.baseURL = '//api.laoshu133.com';
+
+// install
+Vue.use(Model);
 ```
 
 ## Usage
@@ -23,7 +29,7 @@ Vue.use(require('v-model'));
 // ./models/post.js
 import Model from 'v-model';
 
-export default Model('/posts/:id', {
+export default Model.extend('/posts/:id', {
     publish: { method: 'POST' }
 }, {
     EDITING: 0,
@@ -34,6 +40,9 @@ export default Model('/posts/:id', {
 ```javascript
 // app.js
 import Model from 'v-model';
+
+// set baseURL
+Model.http.defaults.baseURL = '//api.laoshu133.com';
 
 // install plugin
 Vue.use(Model);
@@ -67,15 +76,15 @@ const app = new Vue({
 
 ## Model Factory
 
-Before you can create models, you need to generate a Model.
+Before you can create model(s), you need to generate a Model.
 
 ```javascript
-const PostModel = Model(url, actions, staticProps, options);
+const PostModel = Model.extend(url, actions, staticProps, options);
 ```
 
 #### url
 
-An Express-style path string, such as `/posts/:id`.
+An Express-style path string, e.g `/posts/:id`.
 
 #### actions
 
@@ -116,7 +125,7 @@ Where:
 Hash with declaration of static properties.
 
 ```
-const PostModel = Model('/posts/:id', null, {
+const PostModel = Model.extend('/posts/:id', null, {
     EDITING: 0,
     PUBLISHED: 1
 });
@@ -201,8 +210,8 @@ Some http request:
 Usage:
 
 ```javascript
-const PostModel = Model('/posts/:id', {
-    query: { method: 'get', isArray: true, hasPagination: true }
+const PostModel = Model.extend('/posts/:id', {
+    query: { method: 'get', hasPagination: true }
 });
 
 let postsData = PostModel.query({
@@ -215,6 +224,51 @@ postsData.$promise.then(data => {
     console.log(postsData); // { "pagination":{"num":1,"size":20,"total":44}, "items": [...]}
 });
 ```
+
+## $resolved flag
+
+The V-Model instance has a `$resolved` flag.
+Can be used for loading status.
+
+Usage:
+
+```
+<template>
+    <div class="main">
+        <div class="list">
+            <div v-if="!itemsData.$resolved" class="loading">Loading...</div>
+            <ul v-else>
+                <li v-for="item in itemsData.items">{{item.id}}</li>
+            </ul>
+        </div>
+        <div class="pagination" v-if="itemsData.$resolved">...</div>
+    </div>
+</template>
+<script>
+import Model from 'v-model';
+
+const PostModel = Model.extend('/posts/:id', {
+    query: { method: 'get', hasPagination: true }
+});
+
+export default {
+    data() {
+        return {
+            itemsData: {
+                pagination: { num: 1, size: 20, total: 0 },
+                items: []
+            }
+        };
+    },
+    created() {
+        this.itemsData = PostModel.query({
+            page_num: 1
+        });
+    }
+};
+</script>
+```
+
 
 ## Interceptors
 
