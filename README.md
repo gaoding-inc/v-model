@@ -235,7 +235,7 @@ Can be used for loading status.
 
 Usage:
 
-```
+```html
 <template>
     <div class="main">
         <div class="list">
