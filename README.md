@@ -21,9 +21,9 @@ Vue.use(require('v-model'));
 
 ```javascript
 // ./models/post.js
-import VModel from 'v-model';
+import Model from 'v-model';
 
-export default VModel('/posts/:id', {
+export default Model('/posts/:id', {
     publish: { method: 'POST' }
 }, {
     EDITING: 0,
@@ -33,10 +33,10 @@ export default VModel('/posts/:id', {
 
 ```javascript
 // app.js
-import VModel from 'v-model';
+import Model from 'v-model';
 
 // install plugin
-Vue.use(VModel);
+Vue.use(Model);
 
 import PostModel from './models/post';
 
@@ -70,7 +70,7 @@ const app = new Vue({
 Before you can create models, you need to generate a Model.
 
 ```javascript
-const PostModel = VModel(url, actions, staticProps, options);
+const PostModel = Model(url, actions, staticProps, options);
 ```
 
 #### url
@@ -116,7 +116,7 @@ Where:
 Hash with declaration of static properties.
 
 ```
-const PostModel = VModel('/posts/:id', null, {
+const PostModel = Model('/posts/:id', null, {
     EDITING: 0,
     PUBLISHED: 1
 });
@@ -201,7 +201,7 @@ Some http request:
 Usage:
 
 ```javascript
-const PostModel = VModel('/posts/:id', {
+const PostModel = Model('/posts/:id', {
     query: { method: 'get', isArray: true, hasPagination: true }
 });
 
