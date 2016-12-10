@@ -1,5 +1,8 @@
 ## V-Model
 
+[![npm version](https://img.shields.io/npm/v/v-model.svg?style=flat-square)](https://www.npmjs.org/package/v-model)
+[![build status](https://img.shields.io/travis/laoshu133/v-model.svg?style=flat-square)](https://travis-ci.org/laoshu133/v-model)
+
 V-Model is a plugin for Vue.js, like ng-resource.
 based on based on axios, path-to-regexp, and bluebird.
 
