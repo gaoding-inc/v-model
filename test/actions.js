@@ -54,7 +54,7 @@ describe('Model actions', () => {
             id: 1
         });
 
-        server.get('/tags', [
+        server.get('/tags').reply(200, [
             { id: 1, name: 'Tag 1' },
             { id: 2, name: 'Tag 2' }
         ]);
