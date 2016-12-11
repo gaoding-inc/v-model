@@ -1,6 +1,6 @@
 {
   "name": "v-model",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "V-Model is a model plugin for Vue.js, like ng-resource.",
   "main": "index.js",
   "scripts": {
@@ -10,6 +10,12 @@
     "lint": "eslint src",
     "test": "mocha"
   },
+  "files": [
+    "README.md",
+    "index.*",
+    "lib",
+    "src"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/laoshu133/v-model.git"
