@@ -29,19 +29,7 @@ Vue.use(Model);
 ## Usage
 
 ```javascript
-// ./models/post.js
-import Model from 'v-model';
-
-export default Model.extend('/posts/:id', {
-    publish: { method: 'POST' }
-}, {
-    EDITING: 0,
-    PUBLISHED: 1
-});
-```
-
-```javascript
-// app.js
+import Vue from 'vue';
 import Model from 'v-model';
 
 // set baseURL
@@ -50,7 +38,12 @@ Model.http.defaults.baseURL = '//api.laoshu133.com';
 // install plugin
 Vue.use(Model);
 
-import PostModel from './models/post';
+const PostModel = Model.extend('/posts/:id', {
+    publish: { method: 'POST' }
+}, {
+    EDITING: 0,
+    PUBLISHED: 1
+});
 
 const app = new Vue({
     el: '#app',
@@ -69,12 +62,11 @@ const app = new Vue({
 
             return this.post.$promise;
         },
-        save() {
-            return this.post.$save();
+        save(data) {
+            return this.post.$save(data);
         }
     }
 });
-
 ```
 
 ## Model Factory
@@ -82,7 +74,7 @@ const app = new Vue({
 Before you can create model(s), you need to generate a Model.
 
 ```javascript
-const PostModel = Model.extend(url, actions, staticProps, options);
+Model.extend(url, actions, staticProps, options);
 ```
 
 #### url
@@ -128,7 +120,7 @@ Where:
 Hash with declaration of static properties.
 
 ```
-const PostModel = Model.extend('/posts/:id', null, {
+Model.extend('/posts/:id', null, {
     EDITING: 0,
     PUBLISHED: 1
 });
@@ -157,7 +149,7 @@ const post = PostModel.get({
 });
 
 // get post list
-const post = PostModel.query({
+const posts = PostModel.query({
     status: PostModel.PUBLISHED
 });
 
