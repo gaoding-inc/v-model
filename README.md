@@ -220,9 +220,65 @@ postsData.$promise.then(data => {
 });
 ```
 
+## Cancellation
+
+Sometimes we need to abort the request, such as quick switch page number.
+
+Usage:
+
+```javascript
+import Model from 'v-model';
+import Pormise from 'bluebird';
+
+// enable bluebird cancellation
+Promise.config({
+    cancellation: true
+});
+
+const PostModel = Model.extend('/posts/:id', {
+    query: { method: 'get', hasPagination: true }
+});
+
+new Vue({
+    data() {
+        return {
+            query: {
+                page_num: 1
+            },
+            itemsData: {
+                pagination: { num: 1, size: 20, total: 0 },
+                items: []
+            }
+        }
+    },
+    methods: {
+        load() {
+            // Cancel the last request
+            // If it has not responded yet
+            let promise = this.itemsData.$promise;
+            if(promise) {
+                promise.cancel();
+            }
+
+            // make a new request
+            this.itemsData = PostModel.query(query);
+        }
+    },
+    watch: {
+        query() {
+            this.load();
+        }
+    },
+    created() {
+        this.load();
+    }
+});
+```
+
+
 ## $resolved flag
 
-The V-Model instance has a `$resolved` flag.
+The V-Model instance/result has a `$resolved` flag.
 Can be used for loading status.
 
 Usage:
