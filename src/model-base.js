@@ -98,7 +98,8 @@ export default class ModelBase {
         });
 
         // wrap by bluebird
-        return Promise.try(() => {
+        // support Cancellation
+        return new Promise((resolve, reject, onCancel) => {
             options = lodash.assign({
                 url: Model.url(allData)
             }, Model.options, options);
@@ -106,6 +107,17 @@ export default class ModelBase {
             // clean
             if(!rUpdateMethod.test(options.method)) {
                 delete options.data;
+            }
+
+            // cancellation
+            if(typeof onCancel === 'function') {
+                const source = axios.CancelToken.source();
+
+                onCancel(() => {
+                    source.cancel('Request canceled');
+                });
+
+                options.cancelToken = source.token;
             }
 
             return Model.http.request(options);
