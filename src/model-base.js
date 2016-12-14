@@ -120,7 +120,7 @@ export default class ModelBase {
                 options.cancelToken = source.token;
             }
 
-            return Model.http.request(options);
+            return Model.http.request(options).then(resolve, reject);
         });
     }
 
