@@ -31,6 +31,7 @@ const defaultGetPagination = function(response) {
 };
 
 export default class ModelBase {
+    static cacher = null;
     static http = axios.create();
 
     constructor(data) {
@@ -157,6 +158,7 @@ export default class ModelBase {
 
         this.prototype['$' + name] = function(params) {
             const Model = this.constructor;
+
             let result;
 
             // update
@@ -176,16 +178,14 @@ export default class ModelBase {
 
         this[name] = function(params, data) {
             const Model = this;
+            const isUpdateMethod = rUpdateMethod.test(method);
 
             // switch params
-            if(rUpdateMethod.test(method)) {
+            if(isUpdateMethod) {
                 [data, params] = [params, data];
             }
 
-            let model = data;
-            if(!(model instanceof Model)) {
-                model = new Model(data);
-            }
+            const model = (data instanceof Model) ? data : new Model(data);
 
             let result = model;
 
@@ -201,7 +201,26 @@ export default class ModelBase {
             // mixin params
             params = lodash.assign({}, action.params, params);
 
-            let options = lodash.assign({
+            // cacher, only support non update method
+            const cacher = action.cacher || Model.cacher;
+            const allowCacher = action.allowCacher;
+            const fetchCache = () => {
+                if(!isUpdateMethod && allowCacher && cacher) {
+                    const cache = cacher.get(params, Model, result);
+
+                    lodash.merge(result, cache);
+                }
+            };
+            const updateCache = () => {
+                if(!isUpdateMethod && allowCacher && cacher) {
+                    cacher.set(result, params, Model);
+                }
+            };
+
+            fetchCache();
+
+            // options
+            const options = lodash.assign({
                 params: params,
                 data: model
             }, action);
@@ -217,25 +236,29 @@ export default class ModelBase {
                 }
 
                 if(!isArrayResult) {
-                    return model.$reset(data);
+                    model.$reset(data);
                 }
+                else {
+                    const items = hasPagination ? result.items : result;
 
-                let items = hasPagination ? result.items : result;
+                    // fill items
+                    data.forEach(item => {
+                        items.push(new Model(item));
+                    });
 
-                // fill items
-                data.forEach(item => {
-                    items.push(new Model(item));
-                });
+                    if(hasPagination) {
+                        let getPagination = defaultGetPagination;
+                        if(Model.options && Model.options.getPagination) {
+                            getPagination = Model.options.getPagination;
+                        }
 
-                if(hasPagination) {
-                    let getPagination = defaultGetPagination;
-                    if(Model.options && Model.options.getPagination) {
-                        getPagination = Model.options.getPagination;
+                        let pagination = getPagination(response);
+                        lodash.assign(result.pagination, pagination);
                     }
-
-                    let pagination = getPagination(response);
-                    lodash.assign(result.pagination, pagination);
                 }
+
+                // update cache
+                updateCache();
 
                 return result;
             })
