@@ -245,11 +245,10 @@ export default class ModelBase {
                     const items = hasPagination ? result.items : result;
 
                     // fill items
-                    data.forEach((item, idx) => {
-                        items[idx] = new Model(item);
+                    items.length = 0;
+                    data.forEach(item => {
+                        items.push(new Model(item));
                     });
-
-                    items.length = data.length;
 
                     if(hasPagination) {
                         const pagination = getPagination(response);
