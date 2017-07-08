@@ -201,6 +201,11 @@ export default class ModelBase {
                     } : []
                 : model;
 
+            // Define result ext props
+            if(result !== model) {
+                model.$defineResult.call(result);
+            }
+
             // cacher, only support non update method
             const cacher = action.cacher || Model.cacher;
             const allowCacher = action.allowCacher;
