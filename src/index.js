@@ -13,6 +13,7 @@ Model.install = install;
 
 // Vue use
 if(typeof Vue !== 'undefined') {
+    // eslint-disable-next-line
     Vue.use(Model);
 }
 
