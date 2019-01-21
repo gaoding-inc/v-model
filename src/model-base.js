@@ -5,7 +5,9 @@
  */
 
 import axios from 'axios';
-import lodash from 'lodash';
+import forEach from 'lodash/forEach';
+import clone from 'lodash/clone';
+import assign from 'lodash/assign';
 import Promise from 'bluebird';
 import pathToRegexp from 'path-to-regexp';
 
@@ -46,7 +48,7 @@ export default class ModelBase {
             response: null
         };
 
-        lodash.forEach(innerProps, (val, k) => {
+        forEach(innerProps, (val, k) => {
             Object.defineProperty(this, '$' + k, {
                 configurable: true,
                 enumerable: false,
@@ -57,14 +59,14 @@ export default class ModelBase {
     }
 
     $reset(data) {
-        lodash.forEach(this, (val, k) => {
+        forEach(this, (val, k) => {
             if(k !== '$resolved') {
                 delete this[k];
             }
         });
 
         if(typeof data === 'object') {
-            lodash.forEach(data, (val, k) => {
+            forEach(data, (val, k) => {
                 this.$set(k, val);
             });
         }
@@ -79,19 +81,19 @@ export default class ModelBase {
     $request(options) {
         const Model = this.constructor;
 
-        options = lodash.clone(options);
+        options = clone(options);
 
         // mixin params, data
-        options.params = lodash.assign({}, Model.params, options.params);
+        options.params = assign({}, Model.params, options.params);
 
         // all data for url
-        const allData = lodash.assign({},
+        const allData = assign({},
             options.params,
             options.data
         );
 
         // clear params
-        lodash.forEach(Model.urlTokens, token => {
+        forEach(Model.urlTokens, token => {
             if(token && token.name) {
                 delete options.params[token.name];
             }
@@ -100,7 +102,7 @@ export default class ModelBase {
         // wrap by bluebird
         // support Cancellation
         return new Promise((resolve, reject, onCancel) => {
-            options = lodash.assign({
+            options = assign({
                 url: Model.url(allData)
             }, Model.options, options);
 
@@ -140,10 +142,10 @@ export default class ModelBase {
         Model.options = options;
 
         // staic props
-        lodash.assign(Model, staticProps);
+        assign(Model, staticProps);
 
         // actions
-        lodash.forEach(actions, (action, name) => {
+        forEach(actions, (action, name) => {
             Model.addAction(name, action);
         });
 
@@ -161,7 +163,7 @@ export default class ModelBase {
 
             // update
             if(rUpdateMethod.test(method)) {
-                lodash.forEach(params, (val, k) => {
+                forEach(params, (val, k) => {
                     this.$set(k, val);
                 });
 
@@ -199,9 +201,9 @@ export default class ModelBase {
             }
 
             // mixin params
-            params = lodash.assign({}, action.params, params);
+            params = assign({}, action.params, params);
 
-            let options = lodash.assign({
+            let options = assign({
                 params: params,
                 data: model
             }, action);
@@ -234,7 +236,7 @@ export default class ModelBase {
                     }
 
                     let pagination = getPagination(response);
-                    lodash.assign(result.pagination, pagination);
+                    assign(result.pagination, pagination);
                 }
 
                 return result;
