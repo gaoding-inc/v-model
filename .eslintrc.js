@@ -2,13 +2,18 @@ module.exports = {
     root: true,
     env: {
         browser: true,
-        amd: true
+        mocha: true
     },
     parser: 'babel-eslint',
     parserOptions: {
         sourceType: 'module'
     },
+    // https://github.com/feross/standard/blob/master/RULES.md#javascript-standard-style
+    extends: 'standard',
     // required to lint *.vue files
+    plugins: [
+        'html'
+    ],
     // tpl
     // http://info.meteor.com/blog/set-up-sublime-text-for-meteor-es6-es2015-and-jsx-syntax-and-linting
     rules: {
@@ -23,7 +28,7 @@ module.exports = {
         ],
         'eol-last': 1,
         'no-debugger': 1,
-        'padded-blocks': [1, 'never'],
+        'padded-blocks': 1,
         'brace-style': [2, 'stroustrup'],
         'comma-dangle': [2, 'only-multiline'],
         'space-before-function-paren': [2, 'never'],
@@ -36,13 +41,21 @@ module.exports = {
                     'catch': {
                         after: false
                     },
+                    'for': {
+                        after: false
+                    },
                     'if': {
+                        after: false
+                    },
+                    'while': {
                         after: false
                     }
                 }
             }
         ],
-        indent: [2, 4],
+        indent: [2, 4, {
+            MemberExpression: 0
+        }],
         eqeqeq: 2,
         curly: 1
     }

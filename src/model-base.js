@@ -8,31 +8,36 @@ import axios from 'axios';
 import forEach from 'lodash/forEach';
 import clone from 'lodash/clone';
 import assign from 'lodash/assign';
+import merge from 'lodash/merge';
 import Promise from 'bluebird';
 import pathToRegexp from 'path-to-regexp';
 
 const isArray = Array.isArray;
 const rUpdateMethod = /^(POST|PUT|PATCH)$/i;
 
-const defaultGetPagination = function(response) {
-    const headers = response.headers;
-    const key = 'x-pagination';
-
+const defaultGetPagination = (response, key = 'x-pagination') => {
     let pagination = null;
 
     try {
+        const headers = response.headers;
+
         pagination = JSON.parse(headers[key]);
     }
     catch(ex) { }
 
     if(!pagination) {
-        throw new Error(`${key} get/parse error`);
+        pagination = {
+            total: 0,
+            size: 20,
+            num: 1
+        };
     }
 
     return pagination;
 };
 
 export default class ModelBase {
+    static cacher = null;
     static http = axios.create();
 
     constructor(data) {
@@ -156,97 +161,117 @@ export default class ModelBase {
         const method = action.method;
         const hasPagination = action.hasPagination;
         const isArrayResult = !!(action.isArray || hasPagination);
+        const isUpdateMethod = rUpdateMethod.test(method);
 
         this.prototype['$' + name] = function(params) {
             const Model = this.constructor;
-            let result;
 
             // update
-            if(rUpdateMethod.test(method)) {
+            if(isUpdateMethod) {
                 forEach(params, (val, k) => {
                     this.$set(k, val);
                 });
 
-                result = Model[name](this);
-            }
-            else {
-                result = Model[name](params, this);
+                return Model[name](this).$promise;
             }
 
-            return result.$promise;
+            return Model[name](params, this).$promise;
         };
 
         this[name] = function(params, data) {
             const Model = this;
+            const ModelOptions = Model.options || {};
 
             // switch params
-            if(rUpdateMethod.test(method)) {
+            if(isUpdateMethod) {
                 [data, params] = [params, data];
-            }
-
-            let model = data;
-            if(!(model instanceof Model)) {
-                model = new Model(data);
-            }
-
-            let result = model;
-
-            if(isArrayResult) {
-                result = hasPagination ? {
-                    pagination: { total: 0, size: 20, num: 1 },
-                    items: []
-                } : [];
-
-                model.$defineResult.call(result);
             }
 
             // mixin params
             params = assign({}, action.params, params);
 
-            let options = assign({
+            // getPagination
+            const getPagination = ModelOptions.getPagination
+                ? ModelOptions.getPagination
+                : defaultGetPagination;
+
+            const model = (data instanceof Model) ? data : new Model(data);
+            const result = isArrayResult
+                ? hasPagination
+                    ? {
+                        pagination: getPagination(),
+                        items: []
+                    } : []
+                : model;
+
+            // Define result ext props
+            if(result !== model) {
+                model.$defineResult.call(result);
+            }
+
+            // cacher, only support non update method
+            const cacher = action.cacher || Model.cacher;
+            const allowCacher = action.allowCacher;
+            const fetchCache = () => {
+                if(!isUpdateMethod && allowCacher && cacher) {
+                    const cache = cacher.get(params, Model, result);
+
+                    merge(result, cache);
+                }
+            };
+            const updateCache = () => {
+                if(!isUpdateMethod && allowCacher && cacher) {
+                    cacher.set(result, params, Model);
+                }
+            };
+
+            fetchCache();
+
+            // options
+            const options = assign({
                 params: params,
                 data: model
             }, action);
 
-            let promise = model.$request(options)
-            .then(response => {
-                result.$response = response;
+            // set $resolved
+            model.$set.call(result, '$resolved', false);
 
-                let data = response.data;
+            result.$promise = model.$request(options)
+            .then(response => {
+                const data = response.data;
+
+                result.$response = response;
 
                 if(isArray(data) !== isArrayResult) {
                     throw new Error(`Model.${name} expected an ${isArrayResult ? 'array' : 'object'} but got an ${isArray(data) ? 'array' : 'object'}`);
                 }
 
                 if(!isArrayResult) {
-                    return model.$reset(data);
+                    model.$reset(data);
                 }
+                else {
+                    const items = hasPagination ? result.items : result;
 
-                let items = hasPagination ? result.items : result;
+                    // fill items
+                    items.length = 0;
+                    data.forEach(item => {
+                        items.push(new Model(item));
+                    });
 
-                // fill items
-                data.forEach(item => {
-                    items.push(new Model(item));
-                });
-
-                if(hasPagination) {
-                    let getPagination = defaultGetPagination;
-                    if(Model.options && Model.options.getPagination) {
-                        getPagination = Model.options.getPagination;
+                    if(hasPagination) {
+                        const pagination = getPagination(response);
+                        assign(result.pagination, pagination);
                     }
-
-                    let pagination = getPagination(response);
-                    assign(result.pagination, pagination);
                 }
+
+                // update cache
+                updateCache();
 
                 return result;
             })
             .finally(() => {
                 model.$set.call(result, '$resolved', true);
             });
-
-            model.$set.call(result, '$resolved', false);
-            result.$promise = promise;
 
             return result;
         };
