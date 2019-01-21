@@ -1,6 +1,6 @@
 {
   "name": "v-model",
-  "version": "0.0.4",
+  "version": "0.0.8",
   "description": "V-Model is a model plugin for Vue.js, like ng-resource.",
   "main": "index.js",
   "scripts": {
@@ -34,7 +34,7 @@
   "homepage": "https://github.com/laoshu133/v-model#readme",
   "dependencies": {
     "axios": "^0.15.3",
-    "bluebird": "^3.4.6",
+    "bluebird": "^3.5.0",
     "path-to-regexp": "^1.7.0"
   },
   "peerDependencies": {
@@ -49,6 +49,12 @@
     "babel-preset-stage-2": "^6.18.0",
     "chai": "^3.5.0",
     "eslint": "^3.12.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-html": "^3.0.0",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-node": "^5.1.0",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
     "mocha": "^3.2.0",
     "nock": "^9.0.2",
     "rimraf": "^2.5.4",
